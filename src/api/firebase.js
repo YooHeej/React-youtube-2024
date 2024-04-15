@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, GithubAuthProvider,
+        signInWithPopup, signOut, updateProfile, 
+        signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 
 
@@ -12,13 +14,36 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 
-export async function register({email, password}) {
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((result) => {
-      // Signed in 
-      const user = result.user;
-      console.log(user);
-      return user;
+export function register({email, password, name, photo}) {
+  console.log('firebase:register():', email, password);
+   createUserWithEmailAndPassword(auth, email, password)
+  .then(() => {
+    updateProfile(auth.currentUser, {
+      displayName: name, photoURL: photo
     })
+  })
+  .then(() => {logout()})
+  .catch(console.error);
+}
+
+export function login({ email, password}) {
+   signInWithEmailAndPassword(auth, email, password)
     .catch(console.error);
+}
+
+export function loginWithGithub() {
+  const provider = new GithubAuthProvider();
+   signInWithPopup(auth, provider)
+    .catch(console.error);
+}
+
+export function logout() {
+   signOut(auth)
+  .catch(console.error);
+}
+
+export function onUserStateChanged(callback) {
+  onAuthStateChanged(auth, (user) => {
+    callback(user);
+  });
 }
